@@ -13,6 +13,14 @@ spring:
             - classpath:config/core/{application}
             - classpath:config/stats-service/{application}
             - classpath:config/infra/{application}
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
 eureka:
   client:
     serviceUrl:
