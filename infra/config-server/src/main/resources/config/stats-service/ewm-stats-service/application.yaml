@@ -18,7 +18,7 @@ management:
 server:
     error:
         include-message: always
-    port: 0
+    port: 8080
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
