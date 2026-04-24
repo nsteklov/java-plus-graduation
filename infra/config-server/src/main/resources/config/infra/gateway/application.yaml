@@ -1,0 +1,31 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: main_service_route
+          uri: lb://ewm-main-service
+          predicates:
+            - Path=/**
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    gateway:
+      enabled: true
+      access: read-only
+  server:
+    port: 9922
+
