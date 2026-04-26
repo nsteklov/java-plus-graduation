@@ -26,6 +26,5 @@ management:
     gateway:
       enabled: true
       access: read-only
-  server:
-    port: 9922
+
 
