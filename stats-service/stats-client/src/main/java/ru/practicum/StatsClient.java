@@ -36,7 +36,7 @@ public class StatsClient {
     private static final ParameterizedTypeReference<List<ViewStatsDto>> LIST_TYPE =
             new ParameterizedTypeReference<>() {};
 
-    public StatsClient(DiscoveryClient discoveryClient, @Value("${stats.service.id:stats-service}") String statsServiceId) {
+    public StatsClient(DiscoveryClient discoveryClient, @Value("${stats.server.id:stats-server}") String statsServiceId) {
         this.discoveryClient = discoveryClient;
         this.statsServiceId = statsServiceId;
         this.restTemplate = new RestTemplate();
