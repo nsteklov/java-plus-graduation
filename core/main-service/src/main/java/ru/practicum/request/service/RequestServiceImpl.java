@@ -32,7 +32,12 @@ public class RequestServiceImpl implements RequestService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-    // Добавление запроса на участие в событии
+    /**
+     * Добавление запроса на участие в событии
+     * @param userId
+     * @param eventId
+     * @return объект с типом addRequest
+     */
     @Override
     @Transactional
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
@@ -67,7 +72,12 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.toDto(savedRequest);
     }
 
-    // Отмена запроса на участие в событии
+    /**
+     * Отмена запроса на участие в событии
+     * @param userId
+     * @param requestId
+     * @return объект с типом ParticipationRequestDto
+     */
     @Override
     @Transactional
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
@@ -86,7 +96,11 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.toDto(savedRequest);
     }
 
-    // Получение списка запросов текущего пользователя на участие в чужих событиях
+    /**
+     * Получение списка запросов текущего пользователя на участие в чужих событиях
+     * @param userId
+     * @return список объектов с типом ParticipationRequestDto
+     */
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
         log.info("Получение всех запросов пользователя userId = {}", userId);
@@ -103,19 +117,32 @@ public class RequestServiceImpl implements RequestService {
         return requests;
     }
 
-    // Проверка существования пользователя
+    /**
+     * Проверка существования пользователя
+     * @param userId
+     * @return объект с типом User
+     */
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден."));
     }
 
-    // Проверка существования события
+
+    /**
+     * Проверка существования события
+     * @param eventId
+     * @return объект с типом Event
+     */
     private Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id = " + eventId + " не найдено."));
     }
 
-    // Валидация события для запроса
+    /**
+     * Валидация события для запроса
+     * @param event
+     * @param userId
+     */
     private void validateEventForRequest(Event event, Long userId) {
         if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Инициатор события не может добавить запрос на участие в своём событии.");
@@ -135,7 +162,12 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
-    // Проверка существования запроса и проверка запроса пользователя
+    /**
+     * Проверка существования запроса и проверка запроса пользователя
+     * @param requestId
+     * @param userId
+     * @return объект с типом Request
+     */
     private Request findRequestAndCheckOwner(Long requestId, Long userId) {
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с id = " + requestId + " не найден."));

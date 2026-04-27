@@ -13,5 +13,5 @@ public class CommentDto {
     private UserShortDto author;
     private Long eventId;
     private String created;
-    private String status;
+    private CommentStatus status;
 }

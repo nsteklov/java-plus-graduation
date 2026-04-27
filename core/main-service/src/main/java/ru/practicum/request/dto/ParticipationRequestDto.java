@@ -4,24 +4,36 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.request.model.RequestStatus;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequestDto {
-    // ID запроса
+
+    /**
+     * ID запроса
+     */
     private Long id;
 
-    // ID события
+    /**
+     * ID события
+     */
     private Long event;
 
-    // ID пользователя
+    /**
+     * ID пользователя
+     */
     private Long requester;
 
-    // дата и время создания запроса
+    /**
+     * дата и время создания запроса
+     */
     private String created;
 
-    // статус запроса
-    private String status;
+    /**
+     * статус запроса
+     */
+    private RequestStatus status;
 }

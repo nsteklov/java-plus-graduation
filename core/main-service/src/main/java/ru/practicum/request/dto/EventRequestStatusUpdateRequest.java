@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.request.model.RequestStatus;
 
 import java.util.List;
 
@@ -13,9 +14,13 @@ import java.util.List;
 @AllArgsConstructor
 public class EventRequestStatusUpdateRequest {
 
-    // Список ID заявок, которые нужно обработать
+    /**
+     * Список ID заявок, которые нужно обработать
+     */
     private List<Long> requestIds;
 
-    // Новый статус
-    private String status;
+    /**
+     * Новый статус
+     */
+    private RequestStatus status;
 }

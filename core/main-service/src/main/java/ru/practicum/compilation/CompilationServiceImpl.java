@@ -12,6 +12,7 @@ import ru.practicum.event.EventMapper;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.request.dto.ConfirmedRequestsView;
 import ru.practicum.request.repository.RequestRepository;
 
 import java.time.LocalDateTime;
@@ -219,12 +220,12 @@ public class CompilationServiceImpl implements CompilationService {
             return Collections.emptyMap();
         }
 
-        List<Object[]> results = requestRepository.countConfirmedRequestsByEventIds(eventIds);
+        List<ConfirmedRequestsView> results = requestRepository.countConfirmedRequestsByEventIds(eventIds);
 
         return results.stream()
                 .collect(Collectors.toMap(
-                        result -> (Long) result[0],
-                        result -> (Long) result[1]
+                        ConfirmedRequestsView :: getId,
+                        ConfirmedRequestsView :: getQuantity
                 ));
     }
 

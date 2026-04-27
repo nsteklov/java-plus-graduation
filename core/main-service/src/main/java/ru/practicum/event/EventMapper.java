@@ -68,7 +68,7 @@ public class EventMapper {
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(event.getPublishedOn() != null ? FORMATTER.format(event.getPublishedOn()) : "")
                 .requestModeration(event.getRequestModeration())
-                .state(event.getState().toString())
+                .state(event.getState())
                 .title(event.getTitle())
                 .commentCount(0L)
                 .build();

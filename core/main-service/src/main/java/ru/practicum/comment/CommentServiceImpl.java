@@ -35,20 +35,28 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto createComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
         log.info("Создание комментария пользователем {} к событию {}", userId, eventId);
 
-        // Проверяем существование пользователя
+        /**
+         * Проверяем существование пользователя
+         */
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        // Проверяем существование события
+        /**
+         * Проверяем существование события
+         */
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
 
-        // Проверяем, что событие опубликовано
+        /**
+         * Проверяем, что событие опубликовано
+         */
         if (event.getState() != State.PUBLISHED) {
             throw new ConditionsNotMetException("Комментировать можно только опубликованные события");
         }
 
-        // Проверяем, что пользователь посетил событие (имел подтвержденную заявку)
+        /**
+         * Проверяем, что пользователь посетил событие (имел подтвержденную заявку)
+         */
         boolean hasParticipated = requestRepository.existsByRequesterIdAndEventIdAndStatus(
                 userId, eventId, RequestStatus.CONFIRMED
         );
@@ -57,7 +65,9 @@ public class CommentServiceImpl implements CommentService {
             throw new ConditionsNotMetException("Комментировать могут только участники события");
         }
 
-        // Создаем комментарий - ВСЕ комментарии на модерацию
+        /**
+         * Создаем комментарий - ВСЕ комментарии на модерацию
+         */
         Comment comment = CommentMapper.toEntity(newCommentDto);
         comment.setAuthor(author);
         comment.setEvent(event);

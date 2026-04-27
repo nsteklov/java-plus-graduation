@@ -36,6 +36,7 @@ public class RequestEventServiceImpl implements RequestEventService {
     public List<ParticipationRequestDto> getEventParticipants(Long userId, Long eventId) {
         log.info("Получение запросов на участие в событии eventId = {} пользователем userId = {}", eventId, userId);
 
+
         // Проверка существования пользователя
         User user = findUserById(userId);
 
@@ -90,7 +91,7 @@ public class RequestEventServiceImpl implements RequestEventService {
         List<ParticipationRequestDto> confirmed = new ArrayList<>();
         List<ParticipationRequestDto> rejected = new ArrayList<>();
 
-        String status = updateRequest.getStatus();
+        RequestStatus status = updateRequest.getStatus();
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
         for (Request request : requestsToUpdate) {
@@ -98,7 +99,7 @@ public class RequestEventServiceImpl implements RequestEventService {
                 throw new ConflictException("Статус можно изменить только у заявок, находящихся в состоянии ожидания");
             }
 
-            if ("CONFIRMED".equals(status)) {
+            if (status == RequestStatus.CONFIRMED) {
                 if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
                     request.setStatus(RequestStatus.CONFIRMED);
                     confirmed.add(RequestMapper.toDto(request));
@@ -110,7 +111,7 @@ public class RequestEventServiceImpl implements RequestEventService {
                     request.setStatus(RequestStatus.REJECTED);
                     rejected.add(RequestMapper.toDto(request));
                 }
-            } else if ("REJECTED".equals(status)) {
+            } else if (status == RequestStatus.REJECTED) {
                 request.setStatus(RequestStatus.REJECTED);
                 rejected.add(RequestMapper.toDto(request));
             }

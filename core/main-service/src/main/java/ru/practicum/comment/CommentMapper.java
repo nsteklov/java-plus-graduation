@@ -16,7 +16,7 @@ public class CommentMapper {
                 .author(UserMapper.toShortDto(comment.getAuthor()))
                 .eventId(comment.getEvent().getId())
                 .created(comment.getCreated().format(FORMATTER))
-                .status(comment.getStatus().toString())
+                .status(comment.getStatus())
                 .build();
     }
 

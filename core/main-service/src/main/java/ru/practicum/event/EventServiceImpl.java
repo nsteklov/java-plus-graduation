@@ -20,6 +20,7 @@ import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.request.dto.ConfirmedRequestsView;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
@@ -48,7 +49,6 @@ public class EventServiceImpl implements EventService {
             .ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.UTC);
 
-    // Получения количества комментариев
     private Long getCommentCount(Long eventId) {
         return commentRepository.countByEventIdAndStatus(eventId, CommentStatus.PUBLISHED);
     }
@@ -417,12 +417,12 @@ public class EventServiceImpl implements EventService {
             return Collections.emptyMap();
         }
 
-        List<Object[]> results = requestRepository.countConfirmedRequestsByEventIds(eventIds);
+        List<ConfirmedRequestsView> results = requestRepository.countConfirmedRequestsByEventIds(eventIds);
 
         return results.stream()
                 .collect(Collectors.toMap(
-                        result -> (Long) result[0],
-                        result -> (Long) result[1]
+                        ConfirmedRequestsView :: getId,
+                        ConfirmedRequestsView :: getQuantity
                 ));
     }
 

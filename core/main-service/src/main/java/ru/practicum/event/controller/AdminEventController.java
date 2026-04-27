@@ -24,7 +24,19 @@ public class AdminEventController {
 
     private final EventService eventService;
 
-    // Редактирование данных события и его статуса администратором
+    /**
+     * Редактирование данных события и его статуса администратором
+     * @param users
+     * @param states
+     * @param categories
+     * @param paid
+     * @param rangeStart
+     * @param rangeEnd
+     * @param from
+     * @param size
+     * @param request
+     * @return список объектов с типом EventFullDto
+     */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> searchEventsByAdmin(

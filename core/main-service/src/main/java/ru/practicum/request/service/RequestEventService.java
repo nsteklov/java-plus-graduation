@@ -7,10 +7,22 @@ import ru.practicum.request.dto.ParticipationRequestDto;
 import java.util.List;
 
 public interface RequestEventService {
-    // Получение информации о запросах на участие в событии текущего пользователя
+
+    /**
+     * Получение информации о запросах на участие в событии текущего пользователя
+     * @param userId
+     * @param eventId
+     * @return список объектов с типом ParticipationRequestDto
+     */
     List<ParticipationRequestDto> getEventParticipants(Long userId, Long eventId);
 
-    // Изменение статуса заявок на участие в событии текущего пользователя
+    /**
+     * Изменение статуса заявок на участие в событии текущего пользователя
+     * @param userId
+     * @param eventId
+     * @param updateRequest
+     * @return объект с типом EventRequestStatusUpdateResult
+     */
     EventRequestStatusUpdateResult changeRequestStatus(Long userId, Long eventId,
                                                        EventRequestStatusUpdateRequest updateRequest);
 }

@@ -3,6 +3,7 @@ package ru.practicum.event.dto;
 import lombok.*;
 import ru.practicum.category.CategoryDto;
 import ru.practicum.event.Location;
+import ru.practicum.event.State;
 import ru.practicum.user.UserShortDto;
 
 @Getter
@@ -25,7 +26,7 @@ public class EventFullDto {
     private Integer participantLimit;
     private String publishedOn;
     private boolean requestModeration;
-    private String state;
+    private State state;
     private String title;
     private Long views;
     private Long commentCount;

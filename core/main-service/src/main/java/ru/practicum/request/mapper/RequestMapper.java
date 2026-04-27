@@ -14,7 +14,7 @@ public class RequestMapper {
                 .event(request.getEvent().getId())
                 .requester(request.getRequester().getId())
                 .created(request.getCreated().format(FORMATTER))
-                .status(request.getStatus().toString())
+                .status(request.getStatus())
                 .build();
     }
 }

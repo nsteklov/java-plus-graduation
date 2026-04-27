@@ -15,28 +15,39 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Request {
-    // ID запроса
+
+    /**
+     * ID запроса
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Дата и время создания
+    /**
+     * Дата и время создания
+     */
     @Column(nullable = false)
     private LocalDateTime created;
 
-    // Событие
+    /**
+     * Событие
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     @ToString.Exclude
     private Event event;
 
-    // Запрашивающий пользователь
+    /**
+     * Запрашивающий пользователь
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id", nullable = false)
     @ToString.Exclude
     private User requester;
 
-    // Статус
+    /**
+     * Статус
+     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RequestStatus status;

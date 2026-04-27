@@ -13,9 +13,13 @@ import java.util.List;
 @AllArgsConstructor
 public class EventRequestStatusUpdateResult {
 
-    // Список подтвержденных заявок
+    /**
+     * Список подтвержденных заявок
+     */
     private List<ParticipationRequestDto> confirmedRequests;
 
-    // Список отклоненных заявок
+    /**
+     * Список отклоненных заявок
+     */
     private List<ParticipationRequestDto> rejectedRequests;
 }
