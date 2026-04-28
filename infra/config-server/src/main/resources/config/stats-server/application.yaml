@@ -1,0 +1,37 @@
+logging:
+    level:
+        org:
+            hibernate:
+                SQL: WARN
+            springframework:
+                web: INFO
+        ru:
+            practicum: DEBUG
+management:
+    endpoint:
+        health:
+            show-details: always
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics
+server:
+    error:
+        include-message: always
+    port: 0
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: ${SPRING_DATASOURCE_PASSWORD:stat}
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ewm-stats}
+        username: ${SPRING_DATASOURCE_USERNAME:stat}
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                format_sql: true
+                jdbc:
+                    batch_size: 10
+        show-sql: false
