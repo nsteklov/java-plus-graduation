@@ -1,0 +1,37 @@
+server:
+  port: 0
+
+logging:
+    level:
+        org:
+            hibernate:
+                SQL: WARN
+            springframework:
+                web: INFO
+        ru:
+            practicum: DEBUG
+management:
+    endpoint:
+        health:
+            show-details: always
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics,prometheus
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: ${SPRING_DATASOURCE_PASSWORD:users}
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5435/users}
+        username: ${SPRING_DATASOURCE_USERNAME:users}
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                format_sql: true
+                jdbc:
+                    batch_size: 10
+        show-sql: false
+
