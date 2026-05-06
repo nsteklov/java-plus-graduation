@@ -6,7 +6,7 @@
 - запись информации о том, что был обработан запрос к эндпоинту API;
 - предоставление статистики за выбранные даты по выбранному эндпоинту.
 
- Спецификация сервиса статистики содержится здесь: [ewm-stats-service.json]([https://skillbox.ru/media](https://raw.githubusercontent.com/yandex-praktikum/java-explore-with-me/main/ewm-stats-service-spec.json) "спецификация сервиса статистики")
+ Спецификация сервиса статистики содержится здесь: [ewm-stats-service.json](https://raw.githubusercontent.com/yandex-praktikum/java-explore-with-me/main/ewm-stats-service-spec.json/ "спецификация сервиса статистики")
 
 ## Сервис пользователей
 
