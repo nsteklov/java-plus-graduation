@@ -162,35 +162,38 @@ approve=false - комментарий отклоняется (статус REJE
 # Взаимодействие между сервисами
 
 Для взаимодействия основного сервиса и сервиса статистики используется DiscoveryClient. Вся функциональность и настройки описаны в классе ru.practicum.StatsClient.
+
 Для взаимодействия сервисов внутри основного сервиса используются feign-клиенты. Все методы, необходимые для коммуникации между сервисами, помещены в специально созданных внутренних контроллерах. 
+
 
 - Сервис пользователей. Класс ru.practicum.UserInternalController.
   
-GET  /internal/users/check
+GET  /internal/users/check\
 GET  /internal/users/{userId}
 
-Проверка существования пользователя с заданным id
-Получение пользователя с id
+Проверка существования пользователя с заданным id\
+Получение пользователя с определенным id
+
 
 - Сервис событий.  Класс ru.practicum.event.controller.EventInternalController.
 
-GET  /internal/events/check
+GET  /internal/events/check\
 GET  /internal/events/{eventId}
 
-Проверка существования события с заданным id
-Получение события с id
+Проверка существования события с заданным id\
+Получение события с определенным id
 
 - Сервис управления заявками на участие.  Класс ru.practicum.controller.RequestInternalController.
 
-POST  /internal/requests/count
+POST  /internal/requests/count\
 GET  /internal/requests/{userId}/{eventId}/check
 
 Получение подтвержденных заявок на участие по событиям
-Проверка наличия заявок на участие с заданными ИД пользователя, ИД события и статусом
+Проверка наличия заявок на участие с заданными id пользователя, id события и статусом
 
 - Сервис комментариев.  Класс ru.practicum.controller.RequestInternalController.
 
 GET  /internal/comments
 
-Получение комментариев с заданными ИД события и статусом
+Получение комментариев с заданными id события и статусом
 
