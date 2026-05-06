@@ -24,9 +24,9 @@ public class EventInternalController {
         return eventService.eventExists(eventId);
     }
 
-    @GetMapping
+    @GetMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventInternalDto getEventDto(@RequestParam Long eventId) {
+    public EventInternalDto getEventDto(@PathVariable Long eventId) {
         log.info("GET запрос на получение события с id: {}", eventId);
         return eventService.getEventDto(eventId);
     }

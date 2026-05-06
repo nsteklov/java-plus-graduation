@@ -7,7 +7,7 @@ import ru.practicum.event.dto.ConfirmedRequestsView;
 import java.util.List;
 import java.util.Set;
 
-@FeignClient(name = "request-service")
+@FeignClient(name = "request-service", fallback = RequestClientFallback.class)
 public interface RequestClient {
 
     @PostMapping("/internal/requests/count")

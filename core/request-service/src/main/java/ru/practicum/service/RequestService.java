@@ -1,10 +1,8 @@
 package ru.practicum.service;
 
-import ru.practicum.dto.ConfirmedRequestsView;
 import ru.practicum.dto.ParticipationRequestDto;
 
 import java.util.List;
-import java.util.Set;
 
 public interface RequestService {
 

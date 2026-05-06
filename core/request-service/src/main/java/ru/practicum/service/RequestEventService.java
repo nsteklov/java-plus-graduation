@@ -4,7 +4,6 @@ import ru.practicum.dto.ConfirmedRequestsView;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
 import ru.practicum.dto.ParticipationRequestDto;
-import ru.practicum.model.RequestStatus;
 
 import java.util.List;
 import java.util.Set;
