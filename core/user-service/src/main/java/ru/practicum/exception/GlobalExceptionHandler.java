@@ -11,20 +11,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "The required object was not found.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("The required object was not found.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({
@@ -34,65 +32,62 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Map<String, Object>> handleValidationException(RuntimeException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "Incorrectly made request.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleValidationException(RuntimeException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("Incorrectly made request.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, Object>> handleConflictException(ConflictException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "For the requested operation the conditions are not met.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("For the requested operation the conditions are not met.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "Integrity constraint has been violated.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("Integrity constraint has been violated.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "Incorrectly made request.");
-        response.put("message", e.getBindingResult().getFieldErrors().stream()
-                .map(error -> String.format("Field: %s. Error: %s. Value: %s",
-                        error.getField(), error.getDefaultMessage(), error.getRejectedValue()))
-                .collect(java.util.stream.Collectors.joining("; ")));
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("Incorrectly made request.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConditionsNotMetException.class)
-    public ResponseEntity<Map<String, Object>> handleConditionsNotMetException(ConditionsNotMetException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "For the requested operation the conditions are not met.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleConditionsNotMetException(ConditionsNotMetException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("Incorrectly made request.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<Map<String, Object>> handleMissingParams(MissingServletRequestParameterException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("reason", "Incorrectly made request.");
-        response.put("message", e.getMessage());
-        response.put("timestamp", LocalDateTime.now()
+    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException e) {
+        ErrorResponse errorResponse =  new ErrorResponse();
+        errorResponse.setReason("Incorrectly made request.");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
