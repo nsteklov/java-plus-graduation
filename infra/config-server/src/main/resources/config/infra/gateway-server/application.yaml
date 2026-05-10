@@ -5,17 +5,46 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: main_service_route
-          uri: lb://main-service
+        - id: event-service-route
+          uri: lb://event-service
           predicates:
-            - Path=/**
+            - Path=/admin/events/**, /users/{userId}/events, /users/{userId}/events/{eventId}, /events/**, /admin/categories/**, /categories/**, /admin/compilations/**, /compilations/**, /internal/events/**
           filters:
             - name: Retry
               args:
                 retries: 3
                 statuses: NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE
                 methods: GET, POST, PUT, PATCH
-
+        - id: user-service-route
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE
+                methods: GET, POST, PUT, PATCH
+        - id: request-service-route
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/events/{eventId}/requests/**, /users/{userId}/requests/**, /internal/requests/**
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE
+                methods: GET, POST, PUT, PATCH
+        - id: comment-service-route
+          uri: lb://comment-service
+          predicates:
+            - Path=/admin/comments/**, /users/{userId}/comments/**, /comments/**
+          filters:
+            - name: Retry
+              args:
+                retries: 3
+                statuses: NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE
+                methods: GET, POST, PUT, PATCH
 server:
   port: 8080
 

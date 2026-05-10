@@ -1,0 +1,50 @@
+server:
+  port: 0
+
+logging:
+    level:
+        org:
+            hibernate:
+                SQL: WARN
+            springframework:
+                web: INFO
+        ru:
+            practicum: DEBUG
+management:
+    endpoint:
+        health:
+            show-details: always
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics,prometheus
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: ${SPRING_DATASOURCE_PASSWORD:main}
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/ewm-main}
+        username: ${SPRING_DATASOURCE_USERNAME:main}
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                format_sql: true
+                jdbc:
+                    batch_size: 10
+        show-sql: false
+stats:
+  service:
+    id: stats-server
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 50
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000 # 10 секунд в миллисекундах
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: COUNT_BASED
+      minimumNumberOfCalls: 5
+      automaticTransitionFromOpenToHalfOpenEnabled: true

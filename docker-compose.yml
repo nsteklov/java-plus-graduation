@@ -35,6 +35,63 @@ services:
       retries: 10
       start_period: 30s
 
+  users-db:
+    image: postgres:16.1
+    container_name: postgres-users-db
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=users
+      - POSTGRES_USER=users
+      - POSTGRES_PASSWORD=users
+    volumes:
+      - users-postgres:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U users -d users" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  requests-db:
+    image: postgres:16.1
+    container_name: postgres-requests-db
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_DB=requests
+      - POSTGRES_USER=requests
+      - POSTGRES_PASSWORD=requests
+    volumes:
+      - requests-postgres:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U requests -d requests" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  comments-db:
+    image: postgres:16.1
+    container_name: postgres-comments-db
+    ports:
+      - "5437:5432"
+    environment:
+      - POSTGRES_DB=comments
+      - POSTGRES_USER=comments
+      - POSTGRES_PASSWORD=comments
+    volumes:
+      - comments-postgres:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U comments -d comments" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 volumes:
   stats-postgres:
   main-postgres:
+  users-postgres:
+  requests-postgres:
+  comments-postgres:
