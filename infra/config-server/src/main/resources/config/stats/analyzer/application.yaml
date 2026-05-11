@@ -1,0 +1,93 @@
+## ============================================================
+## ОСНОВНЫЕ НАСТРОЙКИ СЕРВЕРА
+## ============================================================
+#server:
+#  port: 9096  # основной порт приложения
+#
+## ============================================================
+## НАСТРОЙКИ ANALYZER (KAFKA)
+## ============================================================
+#analyzer:
+#  # Общие настройки Kafka
+#  bootstrapServers: localhost:9092
+#
+#  # Producer настройки
+#  keySerializer: org.apache.kafka.common.serialization.StringSerializer
+#  valueSerializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+#
+#  # Consumer настройки (общие)
+#  keyDeserializer: org.apache.kafka.common.serialization.StringDeserializer
+#  maxPollRecordsConfig: 100
+#  fetchMaxBytesConfig: 3072000
+#  maxPartitionFetchBytesConfig: 307200
+#
+#  # Consumer для Hub событий
+#  clientIdHub: analyzer-hub-client-1
+#  groupIdHub: analyzer-hub-group
+#  hubValueDeserializer: ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
+#
+#  # Consumer для Snapshot
+#  clientIdSnapshot: analyzer-snapshot-client-1
+#  groupIdSnapshot: analyzer-snapshot-group
+#  snapshotValueDeserializer: ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer
+#
+#  # Топики
+#  hubEventTopic: telemetry.hubs.v1
+#  snapshotTopic: telemetry.snapshots.v1
+#
+## ============================================================
+## НАСТРОЙКИ gRPC
+## ============================================================
+#grpc:
+#  # gRPC сервер
+#  server:
+#    port: 9094
+#
+#  # gRPC клиент для Hub Router
+#  client:
+#    hub-router:
+#      address: 'static://localhost:59090'
+#      enableKeepAlive: true
+#      keepAliveWithoutCalls: true
+#      negotiationType: plaintext
+#
+## ============================================================
+## НАСТРОЙКИ БАЗЫ ДАННЫХ
+## ============================================================
+#spring:
+#  # DataSource
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/smart-home
+#    driverClassName: org.postgresql.Driver
+#    username: dbuser
+#    password: 12345
+#
+#  # JPA
+#  jpa:
+#    hibernate:
+#      ddlAuto: none
+#    properties:
+#      hibernate:
+#        format_sql: true
+#
+#  # SQL инициализация
+#  sql:
+#    init:
+#      mode: always
+#
+## ============================================================
+## НАСТРОЙКИ ЛОГИРОВАНИЯ
+## ============================================================
+#logging:
+#  level:
+#    # JPA логи
+#    org.springframework.orm.jpa: INFO
+#    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+#
+#    # Транзакции
+#    org.springframework.transaction: INFO
+#    org.springframework.transaction.interceptor: TRACE
+#
+#    # Добавим для отладки (опционально)
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql: TRACE

@@ -1,0 +1,24 @@
+server:
+  port: 0
+
+aggregator:
+
+  # Общие настройки
+  bootstrapServers: localhost:9092
+
+  producer:
+    keySerializer: org.apache.kafka.common.serialization.LongSerializer
+    valueSerializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+
+  consumer:
+    clientId: aggregator-client-1
+    groupId: aggregator-group
+    keyDeserializer: org.apache.kafka.common.serialization.LongDeserializer
+    valueDeserializer: ru.yandex.practicum.kafka.deserializer.UserActionDeserializer
+    maxPollRecordsConfig: 100
+    fetchMaxBytesConfig: 3072000
+    maxPartitionFetchBytesConfig: 307200
+
+  topics:
+    userActionsTopic: stats.user-actions.v1
+    eventsSimilarityTopic: stats.events-similarity.v1

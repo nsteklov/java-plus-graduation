@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
     public UserShortDto getUserDto(Long userId) {
         log.info("Получение пользователя с ID: {}", userId);
         Optional<User> optUser = userRepository.findById(userId);
-        if  (!optUser.isPresent()) {
+        if  (optUser.isPresent()) {
             return UserMapper.toShortDto(optUser.get());
         } else  {
             return new UserShortDto();

@@ -26,5 +26,7 @@ public interface EventService {
 
     boolean eventExists (Long eventId);
 
+    EventFullDto addLike(Long eventId);
+
     EventInternalDto getEventDto (Long eventId);
 }

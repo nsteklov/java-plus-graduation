@@ -190,33 +190,33 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private Map<Long, Long> getViewsForEvents(Set<Long> eventIds) {
-        if (eventIds.isEmpty()) {
+        //if (eventIds.isEmpty()) {
             return Collections.emptyMap();
-        }
+        //}
 
-        try {
-            List<String> uris = eventIds.stream()
-                    .map(id -> "/events/" + id)
-                    .collect(Collectors.toList());
-
-            List<ViewStatsDto> stats = statsClient.getStats(
-                    LocalDateTime.now().minusYears(1),
-                    LocalDateTime.now().plusDays(1),
-                    uris,
-                    false
-            );
-
-            return stats.stream()
-                    .filter(stat -> stat.getUri() != null)
-                    .collect(Collectors.toMap(
-                            stat -> extractEventIdFromUri(stat.getUri()),
-                            ViewStatsDto::getHits,
-                            Long::sum
-                    ));
-        } catch (Exception e) {
-            log.warn("Не удалось получить статистику: {}", e.getMessage());
-            return Collections.emptyMap();
-        }
+//        try {
+//            List<String> uris = eventIds.stream()
+//                    .map(id -> "/events/" + id)
+//                    .collect(Collectors.toList());
+//
+//            List<ViewStatsDto> stats = statsClient.getStats(
+//                    LocalDateTime.now().minusYears(1),
+//                    LocalDateTime.now().plusDays(1),
+//                    uris,
+//                    false
+//            );
+//
+//            return stats.stream()
+//                    .filter(stat -> stat.getUri() != null)
+//                    .collect(Collectors.toMap(
+//                            stat -> extractEventIdFromUri(stat.getUri()),
+//                            ViewStatsDto::getHits,
+//                            Long::sum
+//                    ));
+//        } catch (Exception e) {
+//            log.warn("Не удалось получить статистику: {}", e.getMessage());
+//            return Collections.emptyMap();
+//        }
     }
 
     private Map<Long, Long> getConfirmedRequestsForEvents(Set<Long> eventIds) {

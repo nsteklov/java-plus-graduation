@@ -22,6 +22,7 @@ create TABLE IF NOT EXISTS events (
     state VARCHAR(20) DEFAULT 'PENDING',
     title VARCHAR(120) NOT NULL,
     views BIGINT DEFAULT 0,
+    likes BIGINT DEFAULT 0,
     CONSTRAINT pk_event PRIMARY KEY (id),
     CONSTRAINT chk_latitude CHECK (lat BETWEEN -90 AND 90),
     CONSTRAINT chk_longitude CHECK (lon BETWEEN -180 AND 180),

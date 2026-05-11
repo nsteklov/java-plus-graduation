@@ -47,4 +47,11 @@ public class PublicEventController {
         log.info("Получение полной информации о событии");
         return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI());
     }
+
+    @PatchMapping("/{eventId}/like")
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto addLike(@PathVariable Long eventId) {
+        log.info("Проставление лайка событию");
+        return eventService.addLike(eventId);
+    }
 }

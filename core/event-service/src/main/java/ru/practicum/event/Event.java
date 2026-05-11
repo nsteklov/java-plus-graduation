@@ -65,4 +65,7 @@ public class Event {
 
     @Column(name = "views")
     private Long views;
+
+    @Column(name = "likes")
+    private Long likes;
 }
