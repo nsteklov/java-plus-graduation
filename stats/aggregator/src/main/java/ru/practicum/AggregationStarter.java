@@ -5,8 +5,11 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.configuration.KafkaPropertiesConfigAggregator;
+import ru.practicum.ewm.stats.avro.ActionTypeAvro;
+import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -25,9 +28,14 @@ public class AggregationStarter {
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final KafkaPropertiesConfigAggregator propertiesConfig;
-    private Consumer<String, SensorEventAvro> consumer;
-    private Producer<String, SensorsSnapshotAvro> producer;
+    private Consumer<String, UserActionAvro> consumer;
+    private Producer<String, UserActionAvro> producer;
     private Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
+    private Map<Long, Map<Long, Double>> userActionsWithEvents = new HashMap<>();
+    private Map<Long, Double> totalWeightsSums = new HashMap<>();
+    private Map<Long, Map<Long, Double>> minWeightsSums  = new HashMap<>();
+    private List<Long> eventIds = new ArrayList<>();
+    private List<Long> userIds = new ArrayList<>();
     private String userActionsTopic;
     private String eventsSimilarityTopic;
 
@@ -65,9 +73,9 @@ public class AggregationStarter {
 
             // начинаем Poll Loop
             while (true) {
-                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<String, UserActionAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
-                for (ConsumerRecord<String, SensorEventAvro> record : records) {
+                for (ConsumerRecord<String, UserActionAvro> record : records) {
                     // обрабатываем очередную запись
                     handleRecord(record);
                     // фиксируем оффсеты обработанных записей, если нужно
@@ -94,7 +102,7 @@ public class AggregationStarter {
         }
     }
 
-    private static void manageOffsets(ConsumerRecord<String, SensorEventAvro> record, int count, Consumer<String, SensorEventAvro> consumer) {
+    private static void manageOffsets(ConsumerRecord<String, UserActionAvro> record, int count, Consumer<String, UserActionAvro> consumer) {
         // обновляем текущий оффсет для топика-партиции
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
@@ -110,72 +118,89 @@ public class AggregationStarter {
         }
     }
 
-    private void handleRecord(ConsumerRecord<String, SensorEventAvro> record) throws InterruptedException {
+    private void handleRecord(ConsumerRecord<String, UserActionAvro> record) throws InterruptedException {
         log.info("Принимаем сообщение топик = {}, партиция = {}, смещение = {}, значение: {}\n",
                 record.topic(), record.partition(), record.offset(), record.value());
 
+        long userId = record.value().getUserId();
+        long event1 = record.value().getEventId();
+        ActionTypeAvro actionTypeAvro = record.value().getActionType();
+        if (!eventIds.contains(event1)) {
+            eventIds.add(event1);
+        }
+        double weight1New = switch (actionTypeAvro) {
+            case ActionTypeAvro.VIEW -> 0.4;
+            case ActionTypeAvro.REGISTER -> 0.8;
+            case ActionTypeAvro.LIKE -> 1.0;
+            default ->  0.0;
+        };
+        double weight1Old = userActionsWithEvents
+                .computeIfAbsent(event1, e -> new HashMap<>())
+                .getOrDefault(userId, 0.0);
+        double totalWeightsSum1 = totalWeightsSums.getOrDefault(event1, 0.0);
+        log.info("Оценка события с ид {} пользователем с ид {} было {}", event1, userId, weight1Old);
+        log.info("Общая сумма оценок события с ид {} было {}", event1, totalWeightsSum1);
+        if (weight1New <= weight1Old) {
+            log.info("Оценка события с ид {} пользователем с ид {} не увеличилась, пересчет коэффициентов сходства не нужен", event1, userId);
+            return;
+        }
+        userActionsWithEvents
+                .computeIfAbsent(event1, e -> new HashMap<>())
+                .put(userId, weight1New);
+        totalWeightsSums.put(event1, totalWeightsSum1);
+        totalWeightsSum1 = totalWeightsSum1 + weight1New - weight1Old;
+        log.info("Оценка события с ид {} пользователем с ид {} стало {}", event1, userId, weight1New);
+        log.info("Общая сумма оценок события с ид {} стало {}", event1, totalWeightsSum1);
 
-
-        Optional<SensorsSnapshotAvro> sensorSnapshotAvroOptional = updateState(record.value());
-        if (sensorSnapshotAvroOptional.isPresent()) {
-            SensorsSnapshotAvro sensorSnapshotAvro = sensorSnapshotAvroOptional.get();
-            log.info("Отправляем данные снапшота: {}", sensorSnapshotAvro.toString());
-            ProducerRecord producerRecord = new ProducerRecord<>(snapshotTopic, null, sensorSnapshotAvro.getTimestamp().toEpochMilli(), sensorSnapshotAvro.getHubId(), sensorSnapshotAvro);
-            Future<RecordMetadata> future = producer.send(producerRecord);
-            try {
-                future.get(10, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                // Превышено время ожидания
-                log.error("Превышено время ожидания");
-                future.cancel(true); // Отменяем задачу
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("Возникла ошибка при отправке сообщения: ", e);
+        for (Long event2 : eventIds) {
+            if (event1 == event2) {
+                continue;
             }
-        }
-    }
-
-    private Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
-        //Проверяем, есть ли снапшот для event.getHubId()
-        //Если снапшот есть, то достаём его
-        // Если нет, то создаём новый
-        SensorsSnapshotAvro snapshot;
-        if (!snapshots.containsKey(event.getHubId())) {
-            snapshot = new SensorsSnapshotAvro();
-            snapshot.setHubId(event.getHubId());
-            snapshot.setSensorsState(new HashMap<>());
-            log.info("Создаем новый снапшот с hub id = {}", snapshot.getHubId());
-        } else {
-            snapshot = snapshots.get(event.getHubId());
-            log.info("Получаем имеющийся снапшот с hub id = {}", snapshot.getHubId());
-        }
-
-//        Проверяем, есть ли в снапшоте данные для event.getId()
-//        Если данные есть, то достаём их в переменную oldState
-//        Проверка, если oldState.getTimestamp() произошёл позже, чем
-//        event.getTimestamp() или oldState.getData() равен
-//        event.getPayload(), то ничего обнавлять не нужно, выходим из метода
-//        вернув Optional.empty()
-
-        if (snapshot.getSensorsState().containsKey(event.getId())) {
-            SensorStateAvro oldState = snapshot.getSensorsState().get(event.getId());
-            if (oldState.getTimestamp().isAfter(event.getTimestamp()) || oldState.getData().equals(event.getPayload())) {
-                log.info("Снапшот обновлять не нужно");
-                return Optional.empty();
+            long first  = Math.min(event1, event2);
+            long second = Math.max(event1, event2);
+            double minWeightsSum = minWeightsSums
+                    .computeIfAbsent(first, e -> new HashMap<>())
+                    .getOrDefault(second, 0.0);
+            double weight2 = userActionsWithEvents
+                    .computeIfAbsent(event2, e -> new HashMap<>())
+                    .getOrDefault(userId, 0.0);
+            double totalWeightsSum2 = totalWeightsSums.getOrDefault(event2, 0.0);
+            minWeightsSums
+                    .computeIfAbsent(first, e -> new HashMap<>())
+                    .put(second, minWeightsSum);
+            log.info("Сумма минимальных весов событий с ид {} и {}  было {}", event1, event2, minWeightsSum);
+            log.info("Оценка события с ид {} пользователем с ид {}: {}", event2, userId, weight2);
+            log.info("Общая сумма оценок события с ид {}: {}", event2, totalWeightsSum2);
+            if (!userIds.contains(userId)) {
+                userActionsWithEvents
+                        .computeIfAbsent(event2, e -> new HashMap<>())
+                        .put(userId, weight2);
             }
-        }
+            if (weight2 == 0 || totalWeightsSum2 == 0) {
+                log.info("Рассчитывать коэффициент сходства событий {} и {} нет необходимости", event1, event2);
+                return;
+            }
+            minWeightsSum = minWeightsSum + Math.min(weight1New, weight2) - Math.min(weight1Old, weight2);
+            double similarity = minWeightsSum / (Math.sqrt(totalWeightsSum1) * Math.sqrt(totalWeightsSum2));
+            log.info("Сумма минимальных весов событий с ид {} и {}  стало {}", event1, event2, minWeightsSum);
+            log.info("Рассчитана величина сходства событий с ид {} и {}: {}", event1, event2, similarity);
 
-        // если дошли до сюда, значит, пришли новые данные и
-        // снапшот нужно обновить
-        Instant timestamp = Instant.ofEpochSecond(
-                event.getTimestamp().getEpochSecond(),
-                event.getTimestamp().getNano());
-        SensorStateAvro state = SensorStateAvro.newBuilder()
-                .setTimestamp(timestamp)
-                .setData(event.getPayload())
-                .build();
-        snapshot.setTimestamp(timestamp);
-        snapshot.getSensorsState().put(event.getId(), state);
-        snapshots.put(event.getHubId(), snapshot);
-        return Optional.of(snapshot);
+
+
+//                SensorsSnapshotAvro sensorSnapshotAvro = sensorSnapshotAvroOptional.get();
+//                log.info("Отправляем данные снапшота: {}", sensorSnapshotAvro.toString());
+//                ProducerRecord producerRecord = new ProducerRecord<>(snapshotTopic, null, sensorSnapshotAvro.getTimestamp().toEpochMilli(), sensorSnapshotAvro.getHubId(), sensorSnapshotAvro);
+//                Future<RecordMetadata> future = producer.send(producerRecord);
+//                try {
+//                    future.get(10, TimeUnit.SECONDS);
+//                } catch (TimeoutException e) {
+//                    // Превышено время ожидания
+//                    log.error("Превышено время ожидания");
+//                    future.cancel(true); // Отменяем задачу
+//                } catch (InterruptedException | ExecutionException e) {
+//                    log.error("Возникла ошибка при отправке сообщения: ", e);
+//                }
+
+        }
     }
 }
