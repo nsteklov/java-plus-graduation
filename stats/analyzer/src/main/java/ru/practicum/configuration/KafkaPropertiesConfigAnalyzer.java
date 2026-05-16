@@ -13,7 +13,8 @@ public class KafkaPropertiesConfigAnalyzer {
     private String groupIdInteractions;
     private String clientIdSimilarities;
     private String groupIdSimilarities;
-    private String keyDeserializer;
+    private String userActionKeyDeserializer;
+    private String eventSimilarityKeyDeserializer;
     private String userActionValueDeserializer;
     private String eventSimilarityValueDeserializer;
     private String userActionsTopic;
@@ -21,6 +22,4 @@ public class KafkaPropertiesConfigAnalyzer {
     private int maxPollRecordsConfig;
     private int fetchMaxBytesConfig;
     private int maxPartitionFetchBytesConfig;
-    private String keySerializer;
-    private String valueSerializer;
 }

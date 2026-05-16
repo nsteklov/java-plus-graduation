@@ -30,7 +30,7 @@ public class AggregationStarter {
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final KafkaPropertiesConfigAggregator propertiesConfig;
     private Consumer<Long, UserActionAvro> consumer;
-    private Producer<Long, UserActionAvro> producer;
+    private Producer<String, UserActionAvro> producer;
     private Map<Long, Map<Long, Double>> userActionsWithEvents = new HashMap<>();
     private Map<Long, Double> totalWeightsSums = new HashMap<>();
     private Map<Long, Map<Long, Double>> minWeightsSums  = new HashMap<>();
@@ -198,7 +198,8 @@ public class AggregationStarter {
             eventSimilarityAvro.setTimestamp(timestamp);
 
             log.info("Отправляем данные сходства событий с ид {} и {}: {}", first, second, similarity);
-            ProducerRecord producerRecord = new ProducerRecord<>(eventsSimilarityTopic, null, eventSimilarityAvro.getTimestamp().toEpochMilli(), userId, eventSimilarityAvro);
+            String key = first + "-" + second;
+            ProducerRecord producerRecord = new ProducerRecord<>(eventsSimilarityTopic, null, eventSimilarityAvro.getTimestamp().toEpochMilli(), key, eventSimilarityAvro);
             Future<RecordMetadata> future = producer.send(producerRecord);
             try {
                 future.get(10, TimeUnit.SECONDS);

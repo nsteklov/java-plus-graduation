@@ -11,12 +11,7 @@ analyzer:
   # Общие настройки Kafka
   bootstrapServers: localhost:9092
 
-  # Producer настройки
-  keySerializer: org.apache.kafka.common.serialization.LongSerializer
-  valueSerializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
-
   # Consumer настройки (общие)
-  keyDeserializer: org.apache.kafka.common.serialization.LongDeserializer
   maxPollRecordsConfig: 100
   fetchMaxBytesConfig: 3072000
   maxPartitionFetchBytesConfig: 307200
@@ -24,11 +19,13 @@ analyzer:
   # Consumer для действий пользователей
   clientIdInteractions: analyzer-interactions-client-1
   groupIdInteractions: analyzer-interactions-group
+  userActionKeyDeserializer: org.apache.kafka.common.serialization.LongDeserializer
   userActionValueDeserializer: ru.practicum.kafka.deserializer.UserActionDeserializer
 
   # Consumer для сходств мероприятий
   clientIdSimilarities: analyzer-similarities-client-1
   groupIdSimilarities: analyzer-similarities-group
+  eventSimilarityKeyDeserializer: org.apache.kafka.common.serialization.StringDeserializer
   eventSimilarityValueDeserializer: ru.practicum.kafka.deserializer.EventSimilarityDeserializer
 
   # Топики

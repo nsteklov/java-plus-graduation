@@ -19,7 +19,7 @@ public class EventSimilarityProcessor {
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final KafkaPropertiesConfigAnalyzer propertiesConfig;
-    private Consumer<Long, EventSimilarityAvro> consumer;
+    private Consumer<String, EventSimilarityAvro> consumer;
     private String eventsSimilarityTopic;
     private final SimilarityRepository similarityRepository;
 
@@ -31,7 +31,7 @@ public class EventSimilarityProcessor {
         consumerConfig.put(ConsumerConfig.CLIENT_ID_CONFIG, propertiesConfig.getClientIdSimilarities());
         consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, propertiesConfig.getGroupIdSimilarities());
         consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, propertiesConfig.getBootstrapServers());
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, propertiesConfig.getKeyDeserializer());
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, propertiesConfig.getEventSimilarityKeyDeserializer());
         consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, propertiesConfig.getEventSimilarityValueDeserializer());
         consumerConfig.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, propertiesConfig.getMaxPollRecordsConfig());
         consumerConfig.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, propertiesConfig.getFetchMaxBytesConfig());
@@ -51,9 +51,9 @@ public class EventSimilarityProcessor {
 
             // начинаем Poll Loop
             while (true) {
-                ConsumerRecords<Long, EventSimilarityAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<String, EventSimilarityAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
-                for (ConsumerRecord<Long, EventSimilarityAvro> record : records) {
+                for (ConsumerRecord<String, EventSimilarityAvro> record : records) {
                     // обрабатываем очередную запись
                     try {
                         handleRecord(record);
@@ -82,7 +82,7 @@ public class EventSimilarityProcessor {
         }
     }
 
-    private static void manageOffsets(ConsumerRecord<Long, EventSimilarityAvro> record, int count, Consumer<Long, EventSimilarityAvro> consumer) {
+    private static void manageOffsets(ConsumerRecord<String, EventSimilarityAvro> record, int count, Consumer<String, EventSimilarityAvro> consumer) {
         // обновляем текущий оффсет для топика-партиции
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
@@ -98,7 +98,7 @@ public class EventSimilarityProcessor {
         }
     }
 
-    private void handleRecord(ConsumerRecord<Long, EventSimilarityAvro> record) throws InterruptedException {
+    private void handleRecord(ConsumerRecord<String, EventSimilarityAvro> record) throws InterruptedException {
         log.info("Принимаем сообщение о сходстве событий, топик = {}, партиция = {}, смещение = {}, значение: {}\n",
                 record.topic(), record.partition(), record.offset(), record.value());
         EventSimilarityAvro eventSimilarityAvro = record.value();

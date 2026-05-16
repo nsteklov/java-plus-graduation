@@ -13,6 +13,6 @@ create TABLE IF NOT EXISTS similarities (
     event2 BIGINT NOT NULL,
     similarity DECIMAL NOT NULL,
     ts TIMESTAMP WITH TIME ZONE NOT NULL,
-    UNIQUE (event1, event2application.yaml)
+    UNIQUE (event1, event2)
 );
 
