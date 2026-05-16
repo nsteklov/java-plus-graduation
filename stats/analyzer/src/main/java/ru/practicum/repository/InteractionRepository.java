@@ -20,20 +20,4 @@ public interface InteractionRepository extends JpaRepository<Interaction, Long> 
     List<Long> findByUserIdAndEventIds(@Param("userId") Long userId, @Param("eventIds") List<Long> eventIds);
 
     Page<Interaction> getByUserId(Long userId, Pageable pageable);
-
-    @Query("select i " +
-            "from Interaction i " +
-            "join Similarity s " +
-            "on i.eventId = s.event1 " +
-            "where s.event2 = :eventId " +
-            "and i.userId = :userId " +
-            "union all " +
-            "select i " +
-            "from Interaction i " +
-            "join Similarity s " +
-            "on i.eventId = s.event2 " +
-            "where s.event1 = :eventId " +
-            "and i.userId = :userId " +
-            "order by s.similarity desc")
-    Page<Interaction> findSimilar(Long eventId, Long userId, Pageable pageable);
 }

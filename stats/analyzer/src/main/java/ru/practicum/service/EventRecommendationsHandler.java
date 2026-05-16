@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import ru.practicum.dto.SimilarityView;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.ewm.stats.proto.*;
@@ -70,9 +71,39 @@ public class EventRecommendationsHandler {
                 .collect(Collectors.toList());
         log.info("Получили похожие новые мероприятия для пользователя с ид {}: {}", userId, recommendedEventsSorted);
 
-        for (Similarity similarity : recommendedEventsSorted) {
+        List<Long> recommendedEventIds1 = recommendedEventsSorted.stream()
+                .map(Similarity::getEvent1)
+                .collect(Collectors.toList());
+        List<Long> recommendedEventIds2 = recommendedEventsSorted.stream()
+                .map(Similarity::getEvent2)
+                .collect(Collectors.toList());
+        List<Long> recommendedEventIds = new ArrayList<>();
+        recommendedEventIds.addAll(recommendedEventIds1);
+        recommendedEventIds.addAll(recommendedEventIds2);
+        List<RecommendedEventProto> recommendedEventsProto = new ArrayList<>();
+        for (Long recommendedEventId : recommendedEventIds) {
             Pageable pageable2 = PageRequest.of(0, SIMILAR_INTERACTED);
+            List<SimilarityView> similarInteractions = similarityRepository.findSimilar(recommendedEventId, userId, pageable2).toList();
+            log.info("Получили {} коэффициенты подобия и оценки ближайших соседей к событию с ид {}: {}", SIMILAR_INTERACTED, recommendedEventId, similarInteractions);
+            double weightedRatings = similarInteractions.stream()
+                    .mapToDouble(similarityView -> similarityView.getSimilarity() * similarityView .getRating())
+                    .sum();
+            log.info("Получена сумма взвешенных оценок для ближайиших соседей события с ид {}: {}", recommendedEventId, weightedRatings);
+            double similaritiesSum = similarInteractions.stream()
+                    .mapToDouble(SimilarityView::getSimilarity)
+                    .sum();
+            log.info("Получена сумма коэффициентов подобия для ближайиших соседей события с ид {}: {}", recommendedEventId, similaritiesSum);
+            double newRating = weightedRatings / similaritiesSum;
+            log.info("Получена предсказанная оценка события с ид {}: {}", recommendedEventId, newRating);
+            RecommendedEventProto recommendedEventProto = RecommendedEventProto.newBuilder()
+                    .setEventId(recommendedEventId)
+                    .setScore(newRating)
+                    .build();
+            recommendedEventsProto.add(recommendedEventProto);
         }
+
+        log.info("Возвращены предсказанные оценки событий для пользователя с ид {}: {}", userId, recommendedEventsProto);
+        return recommendedEventsProto;
     }
 
 
