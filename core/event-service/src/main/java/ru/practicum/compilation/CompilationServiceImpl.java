@@ -5,8 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsClient;
-import ru.practicum.ViewStatsDto;
+import ru.practicum.CollectorClient;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventMapper;
 import ru.practicum.event.dto.EventShortDto;
@@ -31,7 +30,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final EventRepository eventRepository;
     private final RequestClient requestClient;
     private final UserClient userClient;
-    private final StatsClient statsClient;
+    private final CollectorClient collectorClient;
 
     @Override
     @Transactional
@@ -183,7 +182,7 @@ public class CompilationServiceImpl implements CompilationService {
         UserShortDto userDto = userClient.getUserDto(event.getInitiatorId());
         EventShortDto dto = EventMapper.toShortDto(event, userDto);
         if (dto != null) {
-            dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+            //dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
             dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
         }
         return dto;

@@ -10,3 +10,11 @@ collector:
   producer:
     keySerializer: org.apache.kafka.common.serialization.LongSerializer
     valueSerializer: ru.practicum.kafka.serializer.GeneralAvroSerializer
+
+# ============================================================
+# НАСТРОЙКИ gRPC
+# ============================================================
+grpc:
+  # gRPC сервер
+  server:
+    port: 0

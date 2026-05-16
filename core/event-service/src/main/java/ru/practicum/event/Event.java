@@ -63,8 +63,8 @@ public class Event {
     @Column(nullable = false, length = 120)
     private String title;
 
-    @Column(name = "views")
-    private Long views;
+    @Column(name = "rating")
+    private Double rating;
 
     @Column(name = "likes")
     private Long likes;

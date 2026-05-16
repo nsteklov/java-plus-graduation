@@ -21,7 +21,7 @@ create TABLE IF NOT EXISTS events (
     request_moderation BOOLEAN,
     state VARCHAR(20) DEFAULT 'PENDING',
     title VARCHAR(120) NOT NULL,
-    views BIGINT DEFAULT 0,
+    rating DECIMAL DEFAULT 0.0,
     likes BIGINT DEFAULT 0,
     CONSTRAINT pk_event PRIMARY KEY (id),
     CONSTRAINT chk_latitude CHECK (lat BETWEEN -90 AND 90),

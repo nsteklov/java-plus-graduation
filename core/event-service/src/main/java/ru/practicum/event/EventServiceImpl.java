@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsClient;
+import ru.practicum.CollectorClient;
 import ru.practicum.category.Category;
 import ru.practicum.category.CategoryRepository;
 import ru.practicum.event.dto.*;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
 
-    private final StatsClient statsClient;
+    private final CollectorClient collectorClient;
     private final EventRepository eventRepository;
     private final UserClient userClient;
     private final CategoryRepository categoryRepository;
@@ -67,13 +67,13 @@ public class EventServiceImpl implements EventService {
             EventShortDto eventShortDto = EventMapper.toShortDto(event, userShortDto);
             eventsShortDto.add(eventShortDto);
         }
-        for (EventShortDto event : eventsShortDto) {
-            if (views.get(event.getId()) != null) {
-                event.setViews(views.get(event.getId()));
-            } else {
-                event.setViews(0L);
-            }
-        }
+//        for (EventShortDto event : eventsShortDto) {
+//            if (views.get(event.getId()) != null) {
+//                event.setViews(views.get(event.getId()));
+//            } else {
+//                event.setViews(0L);
+//            }
+//        }
         Set<Long> eventIds = events
                 .stream()
                 .map(Event::getId)
@@ -117,7 +117,7 @@ public class EventServiceImpl implements EventService {
         Event savedEvent = eventRepository.save(event);
         UserShortDto userDto = userClient.getUserDto(initiatorId);
         EventFullDto eventFullDto = EventMapper.toFullDto(savedEvent, userDto);
-        eventFullDto.setViews(0L);
+//        eventFullDto.setViews(0L);
         eventFullDto.setConfirmedRequests(0L);
         log.info("Создано событие с ID: {}", savedEvent.getId());
 
@@ -322,11 +322,11 @@ public class EventServiceImpl implements EventService {
             eventsShortDto.add(eventShortDto);
         }
         for (EventShortDto event : eventsShortDto) {
-            if (views.get(event.getId()) != null) {
-                event.setViews(views.get(event.getId()));
-            } else {
-                event.setViews(0L);
-            }
+//            if (views.get(event.getId()) != null) {
+//                event.setViews(views.get(event.getId()));
+//            } else {
+//                event.setViews(0L);
+//            }
         }
         Set<Long> eventIds = events
                 .stream()
@@ -340,14 +340,11 @@ public class EventServiceImpl implements EventService {
                 event.setConfirmedRequests(0L);
             }
         }
-        for (Event event : events) {
-            statsClient.hit(event.getInitiatorId(), event.getId(), "VIEW", LocalDateTime.now());
-        }
-        if (publicEventsParam.getSort() == SortEvents.VIEWS) {
-            return eventsShortDto.stream()
-                    .sorted(Comparator.comparing(EventShortDto::getViews).reversed())
-                    .collect(Collectors.toList());
-        }
+//        if (publicEventsParam.getSort() == SortEvents.VIEWS) {
+//            return eventsShortDto.stream()
+//                    .sorted(Comparator.comparing(EventShortDto::getViews).reversed())
+//                    .collect(Collectors.toList());
+//        }
         return eventsShortDto;
     }
 
@@ -369,11 +366,11 @@ public class EventServiceImpl implements EventService {
             eventsFullDto.add(eventFullDto);
         }
         for (EventFullDto event : eventsFullDto) {
-            if (views.get(event.getId()) != null) {
-                event.setViews(views.get(event.getId()));
-            } else {
-                event.setViews(0L);
-            }
+//            if (views.get(event.getId()) != null) {
+//                event.setViews(views.get(event.getId()));
+//            } else {
+//                event.setViews(0L);
+//            }
         }
         Set<Long> eventIds = events
                 .stream()
@@ -393,7 +390,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto findById(Long eventId, String ip, String uri) {
+    public EventFullDto findById(Long eventId, String ip, String uri, Long userId) {
         Event event = eventRepository.findByIdPublished(eventId);
         if (event == null) {
             throw new NotFoundException("Событие не найдено или недоступно");
@@ -414,15 +411,21 @@ public class EventServiceImpl implements EventService {
         // Добавляем количество комментариев
         eventFullDto.setCommentCount(getCommentCount(eventId));
 
-        statsClient.hit(event.getInitiatorId(), eventId, "VIEW", LocalDateTime.now());
+        collectorClient.hit(userId, eventId, "VIEW", LocalDateTime.now());
         return eventFullDto;
     }
 
     @Override
-    public EventFullDto addLike(Long eventId) {
+    public EventFullDto addLike(Long eventId, Long userId) {
         Event event = eventRepository.findByIdPublished(eventId);
         if (event == null) {
             throw new NotFoundException("Событие не найдено или недоступно");
+        }
+        Set<Long> eventIds = new HashSet<>();
+        eventIds.add(eventId);
+        boolean confirmedRequest = requestClient.existsByRequesterIdAndEventIdAndStatus(userId, eventId, "CONFIRMED");
+        if (!confirmedRequest) {
+            throw new ConditionsNotMetException("Пользователь может лайкать только посещённые им мероприятия");
         }
         event.setLikes((event.getLikes() == null ? 0 : event.getLikes()) + 1);
         Event updatedEvent = eventRepository.save(event);
@@ -440,7 +443,7 @@ public class EventServiceImpl implements EventService {
         // Добавляем количество комментариев
         eventFullDto.setCommentCount(getCommentCount(eventId));
 
-        statsClient.hit(event.getInitiatorId(), eventId, "LIKE", LocalDateTime.now());
+        collectorClient.hit(userId, eventId, "LIKE", LocalDateTime.now());
         log.info("Лайк событию {} успешно проставлен", eventFullDto);
         return eventFullDto;
     }

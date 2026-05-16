@@ -12,4 +12,7 @@ public interface RequestClient {
 
     @PostMapping("/internal/requests/count")
     List<ConfirmedRequestsView> countConfirmedRequestsByEventIds(@RequestBody Set<Long> eventIds);
+
+    @GetMapping("/internal/requests/{userId}/{eventId}/check")
+    boolean existsByRequesterIdAndEventIdAndStatus(@PathVariable Long userId, @PathVariable Long eventId, @RequestParam String status);
 }

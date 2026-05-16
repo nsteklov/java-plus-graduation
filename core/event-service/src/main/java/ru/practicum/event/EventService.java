@@ -20,13 +20,13 @@ public interface EventService {
 
     List<EventFullDto> searchEventsByAdmin(AdminEventsParam adminEventsParam);
 
-    EventFullDto findById(Long eventId, String ip, String uri);
+    EventFullDto findById(Long eventId, String ip, String uri, Long userId);
 
     EventFullDto findByIdAndInitiatorId(Long initiatorId, Long eventId);
 
     boolean eventExists (Long eventId);
 
-    EventFullDto addLike(Long eventId);
+    EventFullDto addLike(Long eventId, Long userId);
 
     EventInternalDto getEventDto (Long eventId);
 }

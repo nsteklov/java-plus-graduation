@@ -3,6 +3,7 @@ package ru.practicum.event.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -43,15 +44,15 @@ public class PublicEventController {
 
     @GetMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto findById(@PathVariable Long eventId, HttpServletRequest request) {
+    public EventFullDto findById(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId, HttpServletRequest request) {
         log.info("Получение полной информации о событии");
-        return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI());
+        return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI(), userId);
     }
 
     @PatchMapping("/{eventId}/like")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto addLike(@PathVariable Long eventId) {
+    public EventFullDto addLike(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId) {
         log.info("Проставление лайка событию");
-        return eventService.addLike(eventId);
+        return eventService.addLike(eventId, userId);
     }
 }

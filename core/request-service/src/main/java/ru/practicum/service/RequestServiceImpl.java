@@ -14,7 +14,7 @@ import ru.practicum.mapper.RequestMapper;
 import ru.practicum.model.Request;
 import ru.practicum.model.RequestStatus;
 import ru.practicum.repository.RequestRepository;
-import ru.practicum.StatsClient;
+import ru.practicum.CollectorClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,7 +30,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final EventClient eventClient;
     private final UserClient userClient;
-    private final StatsClient statsClient;
+    private final CollectorClient collectorClient;
 
     /*
      * Добавление запроса на участие в событии
@@ -69,7 +69,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request savedRequest = requestRepository.save(request);
-        statsClient.hit(userId, eventId, "REGISTER", LocalDateTime.now());
+        collectorClient.hit(userId, eventId, "REGISTER", LocalDateTime.now());
         log.info("Запрос успешно создан: requestId = {}, status = {}", savedRequest.getId(), savedRequest.getStatus());
 
         return RequestMapper.toDto(savedRequest);

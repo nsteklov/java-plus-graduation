@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.configuration.KafkaPropertiesConfigAggregator;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
+import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
@@ -28,9 +29,8 @@ public class AggregationStarter {
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private final KafkaPropertiesConfigAggregator propertiesConfig;
-    private Consumer<String, UserActionAvro> consumer;
-    private Producer<String, UserActionAvro> producer;
-    private Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
+    private Consumer<Long, UserActionAvro> consumer;
+    private Producer<Long, UserActionAvro> producer;
     private Map<Long, Map<Long, Double>> userActionsWithEvents = new HashMap<>();
     private Map<Long, Double> totalWeightsSums = new HashMap<>();
     private Map<Long, Map<Long, Double>> minWeightsSums  = new HashMap<>();
@@ -73,9 +73,9 @@ public class AggregationStarter {
 
             // начинаем Poll Loop
             while (true) {
-                ConsumerRecords<String, UserActionAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
+                ConsumerRecords<Long, UserActionAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
-                for (ConsumerRecord<String, UserActionAvro> record : records) {
+                for (ConsumerRecord<Long, UserActionAvro> record : records) {
                     // обрабатываем очередную запись
                     handleRecord(record);
                     // фиксируем оффсеты обработанных записей, если нужно
@@ -102,7 +102,7 @@ public class AggregationStarter {
         }
     }
 
-    private static void manageOffsets(ConsumerRecord<String, UserActionAvro> record, int count, Consumer<String, UserActionAvro> consumer) {
+    private static void manageOffsets(ConsumerRecord<Long, UserActionAvro> record, int count, Consumer<Long, UserActionAvro> consumer) {
         // обновляем текущий оффсет для топика-партиции
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
@@ -118,7 +118,7 @@ public class AggregationStarter {
         }
     }
 
-    private void handleRecord(ConsumerRecord<String, UserActionAvro> record) throws InterruptedException {
+    private void handleRecord(ConsumerRecord<Long, UserActionAvro> record) throws InterruptedException {
         log.info("Принимаем сообщение топик = {}, партиция = {}, смещение = {}, значение: {}\n",
                 record.topic(), record.partition(), record.offset(), record.value());
 
@@ -147,8 +147,8 @@ public class AggregationStarter {
         userActionsWithEvents
                 .computeIfAbsent(event1, e -> new HashMap<>())
                 .put(userId, weight1New);
-        totalWeightsSums.put(event1, totalWeightsSum1);
         totalWeightsSum1 = totalWeightsSum1 + weight1New - weight1Old;
+        totalWeightsSums.put(event1, totalWeightsSum1);
         log.info("Оценка события с ид {} пользователем с ид {} стало {}", event1, userId, weight1New);
         log.info("Общая сумма оценок события с ид {} стало {}", event1, totalWeightsSum1);
 
@@ -181,26 +181,34 @@ public class AggregationStarter {
                 return;
             }
             minWeightsSum = minWeightsSum + Math.min(weight1New, weight2) - Math.min(weight1Old, weight2);
+            minWeightsSums
+                    .computeIfAbsent(first, e -> new HashMap<>())
+                    .put(second, minWeightsSum);
             double similarity = minWeightsSum / (Math.sqrt(totalWeightsSum1) * Math.sqrt(totalWeightsSum2));
             log.info("Сумма минимальных весов событий с ид {} и {}  стало {}", event1, event2, minWeightsSum);
             log.info("Рассчитана величина сходства событий с ид {} и {}: {}", event1, event2, similarity);
 
+            EventSimilarityAvro eventSimilarityAvro = new EventSimilarityAvro();
+            eventSimilarityAvro.setEventA(first);
+            eventSimilarityAvro.setEventB(second);
+            eventSimilarityAvro.setScore(similarity);
+            Instant timestamp = Instant.ofEpochSecond(
+                    record.value().getTimestamp().getEpochSecond(),
+                    record.value().getTimestamp().getNano());
+            eventSimilarityAvro.setTimestamp(timestamp);
 
-
-//                SensorsSnapshotAvro sensorSnapshotAvro = sensorSnapshotAvroOptional.get();
-//                log.info("Отправляем данные снапшота: {}", sensorSnapshotAvro.toString());
-//                ProducerRecord producerRecord = new ProducerRecord<>(snapshotTopic, null, sensorSnapshotAvro.getTimestamp().toEpochMilli(), sensorSnapshotAvro.getHubId(), sensorSnapshotAvro);
-//                Future<RecordMetadata> future = producer.send(producerRecord);
-//                try {
-//                    future.get(10, TimeUnit.SECONDS);
-//                } catch (TimeoutException e) {
-//                    // Превышено время ожидания
-//                    log.error("Превышено время ожидания");
-//                    future.cancel(true); // Отменяем задачу
-//                } catch (InterruptedException | ExecutionException e) {
-//                    log.error("Возникла ошибка при отправке сообщения: ", e);
-//                }
-
+            log.info("Отправляем данные сходства событий с ид {} и {}: {}", first, second, similarity);
+            ProducerRecord producerRecord = new ProducerRecord<>(eventsSimilarityTopic, null, eventSimilarityAvro.getTimestamp().toEpochMilli(), userId, eventSimilarityAvro);
+            Future<RecordMetadata> future = producer.send(producerRecord);
+            try {
+                future.get(10, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                // Превышено время ожидания
+                log.error("Превышено время ожидания");
+                future.cancel(true); // Отменяем задачу
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Возникла ошибка при отправке сообщения: ", e);
+            }
         }
     }
 }
