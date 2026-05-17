@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import ru.practicum.dto.EventRatingView;
 import ru.practicum.dto.SimilarityView;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
@@ -149,5 +150,24 @@ public class EventRecommendationsHandler {
         log.info("Отобрали мероприятия похожие на мероприятие с ид {}, исключив те, где пользователь взаимодействовал с обоими мероприятиями: {}", eventId, recommendedEventsProtoSorted);
 
         return recommendedEventsProtoSorted;
+    }
+
+    public List<RecommendedEventProto> getInteractionsCount(InteractionsCountRequestProto interactionsCountRequestProto) {
+
+        List<Long> eventIds = interactionsCountRequestProto.getEventIdList();
+        List<EventRatingView> ratings = interactionRepository.countRatings(eventIds);
+        log.info("Рассчитали рейтинги мероприятий: {}", ratings);
+
+        List<RecommendedEventProto> recommendedEventsProto = new ArrayList<>();
+        for (EventRatingView eventRatingView : ratings) {
+            RecommendedEventProto recommendedEventProto = RecommendedEventProto.newBuilder()
+                    .setEventId(eventRatingView.getEventId())
+                    .setScore(eventRatingView.getRating())
+                    .build();
+            recommendedEventsProto.add(recommendedEventProto);
+        }
+
+        log.info("Вернули рейтинги мероприятий: {}", recommendedEventsProto);
+        return recommendedEventsProto;
     }
 }

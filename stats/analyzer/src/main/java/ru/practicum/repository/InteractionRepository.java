@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.practicum.dto.EventRatingView;
 import ru.practicum.model.Interaction;
 
 import java.util.List;
@@ -20,4 +21,10 @@ public interface InteractionRepository extends JpaRepository<Interaction, Long> 
     List<Long> findByUserIdAndEventIds(@Param("userId") Long userId, @Param("eventIds") List<Long> eventIds);
 
     Page<Interaction> getByUserId(Long userId, Pageable pageable);
+
+    @Query("SELECT new ru.practicum.dto.EventRatingView (i.eventId, sum(i.rating)) " +
+            "FROM Interaction i " +
+            "WHERE i.eventId in :eventIds " +
+            "GROUP BY i.eventId")
+    List<EventRatingView> countRatings(@Param("eventIds") List<Long> eventIds);
 }
