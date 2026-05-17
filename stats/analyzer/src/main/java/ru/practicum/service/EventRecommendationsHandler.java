@@ -37,10 +37,10 @@ public class EventRecommendationsHandler {
 
     public List<RecommendedEventProto> getRecommendationsForUser(UserPredictionsRequestProto userPredictionsRequestProto) {
 
-        Long maxResults = userPredictionsRequestProto.getMaxResults();
+        Integer maxResults = userPredictionsRequestProto.getMaxResults();
         Long userId = userPredictionsRequestProto.getUserId();
 
-        Pageable pageable1 = PageRequest.of(0, Math.toIntExact(maxResults), Sort.by("ts").descending());
+        Pageable pageable1 = PageRequest.of(0, maxResults, Sort.by("ts").descending());
         List<Long> recentlyInteracted = interactionRepository.getByUserId(userId, pageable1).toList().stream()
                 .map(Interaction::getEventId)
                 .collect(Collectors.toList());
@@ -48,7 +48,7 @@ public class EventRecommendationsHandler {
             log.info("Пользователь с ид {} не взаимодействовал ни с какими мероприятиями", userId);
             return new ArrayList<>();
         }
-        log.info("Получили {} мероприятий, с которыми пользователь с ид {} недавно взаимодействовал: {}", Math.toIntExact(maxResults), userId, recentlyInteracted);
+        log.info("Получили {} мероприятий, с которыми пользователь с ид {} недавно взаимодействовал: {}", maxResults, userId, recentlyInteracted);
 
         List<Similarity> similarEvents = similarityRepository.findByEventIds(recentlyInteracted);
         List<Long> eventsIds1 = similarEvents.stream()
@@ -110,7 +110,7 @@ public class EventRecommendationsHandler {
 
     public List<RecommendedEventProto> getSimilarEvents(SimilarEventsRequestProto similarEventsRequestProto) {
 
-        Long maxResults = similarEventsRequestProto.getMaxResults();
+        Integer maxResults = similarEventsRequestProto.getMaxResults();
         Long eventId = similarEventsRequestProto.getEventId();
         Long userId = similarEventsRequestProto.getUserId();
 

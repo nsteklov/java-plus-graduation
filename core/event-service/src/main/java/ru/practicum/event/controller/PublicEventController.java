@@ -7,13 +7,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.AnalyzerClient;
 import ru.practicum.event.EventService;
 import ru.practicum.event.SortEvents;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.params.PublicEventsParam;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(path = "/events")
@@ -22,6 +25,8 @@ import java.util.List;
 @Validated
 public class PublicEventController {
     private final EventService eventService;
+    private final AnalyzerClient analyzerClient;
+    public static final int MAX_RESULTS = 20;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -47,6 +52,13 @@ public class PublicEventController {
     public EventFullDto findById(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId, HttpServletRequest request) {
         log.info("Получение полной информации о событии");
         return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI(), userId);
+    }
+
+    @GetMapping("/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public Stream<RecommendedEventProto> recommendedEvents(@RequestHeader("X-EWM-USER-ID") Long userId) {
+        log.info("Получение рекоммендаций для пользователя с ид {}", userId);
+        return analyzerClient.getRecommendationsForUser(userId, MAX_RESULTS);
     }
 
     @PatchMapping("/{eventId}/like")
