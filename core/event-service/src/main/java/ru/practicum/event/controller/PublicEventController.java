@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.AnalyzerClient;
 import ru.practicum.event.EventService;
 import ru.practicum.event.SortEvents;
 import ru.practicum.event.dto.EventFullDto;
@@ -13,6 +14,7 @@ import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.params.PublicEventsParam;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/events")
@@ -21,6 +23,8 @@ import java.util.List;
 @Validated
 public class PublicEventController {
     private final EventService eventService;
+    private final AnalyzerClient analyzerClient;
+    public static final int MAX_RESULTS = 20;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -43,8 +47,22 @@ public class PublicEventController {
 
     @GetMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto findById(@PathVariable Long eventId, HttpServletRequest request) {
+    public EventFullDto findById(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId, HttpServletRequest request) {
         log.info("Получение полной информации о событии");
-        return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI());
+        return eventService.findById(eventId, request.getRemoteAddr(), request.getRequestURI(), userId);
+    }
+
+    @GetMapping("/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<Long, Double> recommendedEvents(@RequestHeader("X-EWM-USER-ID") Long userId) {
+        log.info("Получение рекоммендаций для пользователя с ид {}", userId);
+        return analyzerClient.getRecommendedEventsForUser(userId, MAX_RESULTS);
+    }
+
+    @PatchMapping("/{eventId}/like")
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto addLike(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId) {
+        log.info("Проставление лайка событию");
+        return eventService.addLike(eventId, userId);
     }
 }

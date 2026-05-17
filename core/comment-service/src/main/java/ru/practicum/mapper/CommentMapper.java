@@ -1,9 +1,9 @@
 package ru.practicum.mapper;
 
-import ru.practicum.model.Comment;
 import ru.practicum.dto.CommentDto;
-import ru.practicum.model.CommentStatus;
 import ru.practicum.dto.NewCommentDto;
+import ru.practicum.model.Comment;
+import ru.practicum.model.CommentStatus;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

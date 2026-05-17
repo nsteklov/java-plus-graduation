@@ -66,6 +66,7 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
+                .likes(event.getLikes())
                 .commentCount(0L)
                 .build();
     }

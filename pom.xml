@@ -12,7 +12,7 @@
 
 	<name>Explore With Me</name>
     <modules>
-        <module>stats-service</module>
+        <module>stats</module>
         <module>infra</module>
         <module>core</module>
     </modules>
@@ -23,13 +23,26 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<java.version>21</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>21</java.version>
+
+        <avro.version>1.11.3</avro.version>
+        <kafka-clients.version>3.6.1</kafka-clients.version>
+        <springdoc-openapi-starter.version>2.6.0</springdoc-openapi-starter.version>
+        <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
+        <protobuf.version>3.23.4</protobuf.version>
+        <grpc.version>1.63.0</grpc.version>
         <spring-cloud-dependencies.version>2023.0.3</spring-cloud-dependencies.version>
+        <querydsl.version>5.1.0</querydsl.version>
+
+        <!--       Plugins       -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
+        <protobuf-plugin.version>2.4.0</protobuf-plugin.version>
 	</properties>
 
     <dependencyManagement>
         <dependencies>
+
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -37,6 +50,56 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka-clients.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi-starter.version}</version>
+            </dependency>
+
+            <!--    GRPC dependencies management        -->
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-spring-boot-starter</artifactId>
+                <version>${grpc-spring-boot-starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-server-spring-boot-starter</artifactId>
+                <version>${grpc-spring-boot-starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.34</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -70,13 +133,6 @@
 							<phase>compile</phase>
 						</execution>
 					</executions>
-					<dependencies>
-						<dependency>
-							<groupId>com.puppycrawl.tools</groupId>
-							<artifactId>checkstyle</artifactId>
-							<version>10.3</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
@@ -162,6 +218,16 @@
 						</execution>
 					</executions>
 				</plugin>
+                <plugin>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro-maven-plugin</artifactId>
+                    <version>${avro-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.github.ascopes</groupId>
+                    <artifactId>protobuf-maven-plugin</artifactId>
+                    <version>${protobuf-plugin.version}</version>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -173,29 +239,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-checkstyle-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-			<reporting>
-				<plugins>
-					<plugin>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</reporting>
-		</profile>
-		<profile>
-			<id>coverage</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>

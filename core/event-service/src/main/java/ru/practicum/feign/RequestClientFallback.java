@@ -12,4 +12,9 @@ public class RequestClientFallback implements RequestClient {
     public List<ConfirmedRequestsView> countConfirmedRequestsByEventIds(Set<Long> eventIds) {
         return new ArrayList<>();
     }
+
+    @Override
+    public boolean existsByRequesterIdAndEventIdAndStatus(Long userId, Long eventId, String status) {
+        return false;
+    }
 }

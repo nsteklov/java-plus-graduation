@@ -1,0 +1,86 @@
+# ============================================================
+# ОСНОВНЫЕ НАСТРОЙКИ СЕРВЕРА
+# ============================================================
+server:
+  port: 0  # основной порт приложения
+
+# ============================================================
+# НАСТРОЙКИ ANALYZER (KAFKA)
+# ============================================================
+analyzer:
+  # Общие настройки Kafka
+  bootstrapServers: localhost:9092
+
+  # Consumer настройки (общие)
+  maxPollRecordsConfig: 100
+  fetchMaxBytesConfig: 3072000
+  maxPartitionFetchBytesConfig: 307200
+
+  # Consumer для действий пользователей
+  clientIdInteractions: analyzer-interactions-client-1
+  groupIdInteractions: analyzer-interactions-group
+  userActionKeyDeserializer: org.apache.kafka.common.serialization.LongDeserializer
+  userActionValueDeserializer: ru.practicum.kafka.deserializer.UserActionDeserializer
+
+  # Consumer для сходств мероприятий
+  clientIdSimilarities: analyzer-similarities-client-1
+  groupIdSimilarities: analyzer-similarities-group
+  eventSimilarityKeyDeserializer: org.apache.kafka.common.serialization.StringDeserializer
+  eventSimilarityValueDeserializer: ru.practicum.kafka.deserializer.EventSimilarityDeserializer
+
+  # Топики
+  userActionsTopic: stats.user-actions.v1
+  eventsSimilarityTopic: stats.events-similarity.v1
+
+# ============================================================
+# НАСТРОЙКИ gRPC
+# ============================================================
+grpc:
+  # gRPC сервер
+  server:
+    port: 0
+#
+#  # gRPC клиент для Hub Router
+#  client:
+#    hub-router:
+#      address: 'static://localhost:59090'
+#      enableKeepAlive: true
+#      keepAliveWithoutCalls: true
+#      negotiationType: plaintext
+
+# ============================================================
+# НАСТРОЙКИ БАЗЫ ДАННЫХ
+# ============================================================
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: ${SPRING_DATASOURCE_PASSWORD:analyzer}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5438/analyzer}
+    username: ${SPRING_DATASOURCE_USERNAME:analyzer}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 10
+    show-sql: false
+
+# ============================================================
+# НАСТРОЙКИ ЛОГИРОВАНИЯ
+# ============================================================
+logging:
+  level:
+    # JPA логи
+    org.springframework.orm.jpa: INFO
+    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+
+    # Транзакции
+    org.springframework.transaction: INFO
+    org.springframework.transaction.interceptor: TRACE
+
+    # Добавим для отладки (опционально)
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
