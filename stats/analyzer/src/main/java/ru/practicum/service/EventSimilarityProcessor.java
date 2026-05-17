@@ -7,8 +7,8 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.practicum.configuration.KafkaPropertiesConfigAnalyzer;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
-import ru.practicum.repository.SimilarityRepository;
 import ru.practicum.model.Similarity;
+import ru.practicum.repository.SimilarityRepository;
 
 import java.time.Duration;
 import java.util.*;

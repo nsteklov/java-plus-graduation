@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CommentDto;
 import ru.practicum.dto.EventInternalDto;
 import ru.practicum.dto.NewCommentDto;
-
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.feign.EventClient;

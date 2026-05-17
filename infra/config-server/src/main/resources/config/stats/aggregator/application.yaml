@@ -7,7 +7,7 @@ aggregator:
   bootstrapServers: localhost:9092
 
   producer:
-    keySerializer: org.apache.kafka.common.serialization.LongSerializer
+    keySerializer: org.apache.kafka.common.serialization.StringSerializer
     valueSerializer: ru.practicum.kafka.serializer.GeneralAvroSerializer
 
   consumer:

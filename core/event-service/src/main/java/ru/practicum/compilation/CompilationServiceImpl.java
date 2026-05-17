@@ -8,16 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.AnalyzerClient;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventMapper;
+import ru.practicum.event.dto.ConfirmedRequestsView;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.UserShortDto;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.event.dto.ConfirmedRequestsView;
 import ru.practicum.feign.RequestClient;
 import ru.practicum.feign.UserClient;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 

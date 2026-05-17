@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.dto.SimilarityView;
-import ru.practicum.model.Interaction;
 import ru.practicum.model.Similarity;
 
 import java.util.List;
@@ -28,14 +27,14 @@ public interface SimilarityRepository extends JpaRepository<Similarity, Long> {
     List<Similarity> findByEventIds(@Param("eventIds") List<Long> eventIds);
 
 
-    @Query ("SELECT new ru.practicum.dto.SimilarityView (i.rating, s.similarity) " +
+    @Query ("select new ru.practicum.dto.SimilarityView (i.rating, s.similarity) " +
             "from Interaction i " +
             "join Similarity s " +
             "on i.eventId = s.event1 " +
             "where s.event2 = :eventId " +
             "and i.userId = :userId " +
             "union all " +
-            "select i " +
+            "select new ru.practicum.dto.SimilarityView (i.rating, s.similarity) " +
             "from Interaction i " +
             "join Similarity s " +
             "on i.eventId = s.event2 " +

@@ -3,7 +3,6 @@ package ru.practicum.event.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +12,9 @@ import ru.practicum.event.SortEvents;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.params.PublicEventsParam;
-import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/events")
@@ -56,9 +54,9 @@ public class PublicEventController {
 
     @GetMapping("/recommendations")
     @ResponseStatus(HttpStatus.OK)
-    public Stream<RecommendedEventProto> recommendedEvents(@RequestHeader("X-EWM-USER-ID") Long userId) {
+    public Map<Long, Double> recommendedEvents(@RequestHeader("X-EWM-USER-ID") Long userId) {
         log.info("Получение рекоммендаций для пользователя с ид {}", userId);
-        return analyzerClient.getRecommendationsForUser(userId, MAX_RESULTS);
+        return analyzerClient.getRecommendedEventsForUser(userId, MAX_RESULTS);
     }
 
     @PatchMapping("/{eventId}/like")

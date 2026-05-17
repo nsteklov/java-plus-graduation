@@ -7,21 +7,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import ru.practicum.dto.EventRatingView;
 import ru.practicum.dto.SimilarityView;
-import ru.practicum.ewm.stats.avro.ActionTypeAvro;
-import ru.practicum.ewm.stats.avro.UserActionAvro;
-import ru.practicum.ewm.stats.proto.*;
+import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
+import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
+import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
 import ru.practicum.model.Interaction;
 import ru.practicum.model.Similarity;
 import ru.practicum.repository.InteractionRepository;
 import ru.practicum.repository.SimilarityRepository;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -70,22 +68,24 @@ public class EventRecommendationsHandler {
                 .sorted(Comparator.comparingDouble(Similarity::getSimilarity).reversed())
                 .limit(maxResults)
                 .collect(Collectors.toList());
-        log.info("Получили похожие новые мероприятия для пользователя с ид {}: {}", userId, recommendedEventsSorted);
-
         List<Long> recommendedEventIds1 = recommendedEventsSorted.stream()
                 .map(Similarity::getEvent1)
+                .filter(eventId -> !recentlyInteracted.contains(eventId))
                 .collect(Collectors.toList());
         List<Long> recommendedEventIds2 = recommendedEventsSorted.stream()
                 .map(Similarity::getEvent2)
+                .filter(eventId -> !recentlyInteracted.contains(eventId))
                 .collect(Collectors.toList());
         List<Long> recommendedEventIds = new ArrayList<>();
         recommendedEventIds.addAll(recommendedEventIds1);
         recommendedEventIds.addAll(recommendedEventIds2);
+        log.info("Получили похожие новые мероприятия для пользователя с ид {}: {}", userId, recommendedEventIds);
+
         List<RecommendedEventProto> recommendedEventsProto = new ArrayList<>();
         for (Long recommendedEventId : recommendedEventIds) {
             Pageable pageable2 = PageRequest.of(0, SIMILAR_INTERACTED);
             List<SimilarityView> similarInteractions = similarityRepository.findSimilar(recommendedEventId, userId, pageable2).toList();
-            log.info("Получили {} коэффициенты подобия и оценки ближайших соседей к событию с ид {}: {}", SIMILAR_INTERACTED, recommendedEventId, similarInteractions);
+            log.info("Получили {} коэффициентов подобия и оценки ближайших соседей к событию с ид {}: {}", SIMILAR_INTERACTED, recommendedEventId, similarInteractions);
             double weightedRatings = similarInteractions.stream()
                     .mapToDouble(similarityView -> similarityView.getSimilarity() * similarityView .getRating())
                     .sum();

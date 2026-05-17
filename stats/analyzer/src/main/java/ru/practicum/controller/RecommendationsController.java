@@ -6,7 +6,6 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.ewm.stats.proto.*;
 import ru.practicum.service.EventRecommendationsHandler;
 
-import java.util.Iterator;
 import java.util.List;
 
 @GrpcService

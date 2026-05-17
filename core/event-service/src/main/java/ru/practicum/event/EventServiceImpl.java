@@ -22,8 +22,6 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.feign.CommentClient;
 import ru.practicum.feign.RequestClient;
 import ru.practicum.feign.UserClient;
-import ru.practicum.event.dto.ConfirmedRequestsView;
-import ru.practicum.event.dto.UserShortDto;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

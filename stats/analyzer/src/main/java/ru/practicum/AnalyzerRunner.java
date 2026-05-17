@@ -18,10 +18,9 @@ public class AnalyzerRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // запускаем в отдельном потоке обработчик событий действий пользователей
-        // от пользовательских хабов
-        Thread hubEventsThread = new Thread(userActionProcessor);
-        hubEventsThread.setName("HubEventHandlerThread");
-        hubEventsThread.start();
+        Thread userActionThread = new Thread(userActionProcessor);
+        userActionThread.setName("UserActionHandlerThread");
+        userActionThread.start();
 
         // В текущем потоке начинаем обработку
         // событий расчета сходств событий

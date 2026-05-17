@@ -1,7 +1,10 @@
 package ru.practicum.event;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.category.Category;
 
 import java.time.LocalDateTime;
@@ -64,8 +67,8 @@ public class Event {
     private String title;
 
     @Column(name = "rating")
-    private Double rating;
+    private Double rating = 0.0;
 
     @Column(name = "likes")
-    private Long likes;
+    private Long likes = 0L;
 }
